@@ -66,3 +66,7 @@ Query strings are never captured; numeric/UUID path segments are masked to `{id}
 - Constructors, static initialisers and trivial getters/setters are not instrumented (`instrument.skipTrivial`).
 - Sampling is safepoint-biased and estimates time as samples x interval.
 - Request roots currently target Tomcat/servlet containers; Jetty/Undertow fall back to `HttpServlet.service`.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
