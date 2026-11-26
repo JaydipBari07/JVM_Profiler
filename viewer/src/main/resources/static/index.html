@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JVM Profiler</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>JVM Profiler</h1>
+  <div class="filters">
+    <label>Time
+      <select id="range">
+        <option value="300000">Last 5 min</option>
+        <option value="900000">Last 15 min</option>
+        <option value="3600000" selected>Last 1 hour</option>
+        <option value="21600000">Last 6 hours</option>
+        <option value="86400000">Last 24 hours</option>
+        <option value="172800000">Last 48 hours</option>
+        <option value="custom">Custom...</option>
+      </select>
+    </label>
+    <span id="custom" hidden>
+      <input type="datetime-local" id="from"> &ndash; <input type="datetime-local" id="to">
+    </span>
+    <label>Type
+      <select id="kind"><option value="">All</option><option value="request">Requests</option><option value="background">Background</option></select>
+    </label>
+    <label>Search <input id="q" placeholder="url, thread, request id" size="22"></label>
+    <label>Min ms <input id="minMs" type="number" min="0" value="0" style="width:64px"></label>
+    <label><input type="checkbox" id="err"> errors</label>
+    <label><input type="checkbox" id="alerts"> alerts</label>
+    <label><input type="checkbox" id="auto"> auto-refresh</label>
+    <button id="apply">Apply</button>
+  </div>
+  <div id="thread-chip" hidden></div>
+</header>
+<nav id="tabs">
+  <button data-tab="traces" class="active">Traces</button>
+  <button data-tab="threads">Threads</button>
+  <button data-tab="hot">Hot methods</button>
+  <button data-tab="flame">Flame graph</button>
+  <button data-tab="samples">Sampled stacks</button>
+  <button data-tab="jvm">JVM metrics</button>
+</nav>
+<main id="main"></main>
+<div id="status"></div>
+<script src="app.js"></script>
+</body>
+</html>
