@@ -24,6 +24,8 @@ public final class Node {
     public int errorCount;
     public Node[] children = NO_CHILDREN;
     public int childCount;
+    /** The SQL text of the most recent call, set only for JDBC execute methods. */
+    public String sql;
 
     Node(int methodId) {
         this.methodId = methodId;
@@ -35,6 +37,7 @@ public final class Node {
         minNanos = Long.MAX_VALUE;
         errorCount = 0;
         childCount = 0;
+        sql = null;
         return this;
     }
 

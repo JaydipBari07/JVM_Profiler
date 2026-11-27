@@ -37,7 +37,9 @@ public final class PropertyParser {
     public static String[] parseList(String value, String[] defaultValue) {
         if (value == null) return defaultValue;
         List<String> out = new ArrayList<String>();
-        for (String s : value.split("[,;]")) if (!s.trim().isEmpty()) out.add(s.trim());
+        for (String s : value.split("[,;]"))
+            if (!s.trim().isEmpty())
+                out.add(s.trim());
         return out.toArray(new String[0]);
     }
 }

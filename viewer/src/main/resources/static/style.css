@@ -43,3 +43,5 @@ td.title { max-width:520px; overflow:hidden; text-overflow:ellipsis; }
 canvas.chart { width:100%; height:160px; background:#fff; border:1px solid var(--line); margin-bottom:12px; }
 .chart-title { font-weight:600; margin:6px 0 2px; }
 .empty { padding:30px; text-align:center; color:var(--muted); }
+
+.sql { font-family:Consolas,Menlo,monospace; font-size:11px; color:var(--muted); white-space:pre-wrap; word-break:break-all; margin:2px 0 2px 14px; }

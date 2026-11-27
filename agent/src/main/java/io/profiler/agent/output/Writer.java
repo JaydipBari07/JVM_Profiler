@@ -153,6 +153,10 @@ public final class Writer extends Thread {
                 .append(",\"a\":").append(node.allocBytes).append(",\"mn\":").append(node.callCount == 0 ? 0 : node.minNanos)
                 .append(",\"mx\":").append(node.maxNanos);
         if (node.errorCount > 0) sb.append(",\"e\":").append(node.errorCount);
+        if (node.sql != null) {
+            sb.append(",\"sql\":");
+            Json.writeEscapedString(sb, node.sql);
+        }
         if (node.childCount > 0) {
             sb.append(",\"k\":[");
             boolean first = true;

@@ -126,7 +126,37 @@ public final class Profiler {
                 enter(methodId);
                 return;
             }
-            if (active) startTrace(state, methodId, request, response, Trace.REQUEST);
+            if (active)
+                startTrace(state, methodId, request, response, Trace.REQUEST);
+        } catch (Throwable ignored) {
+        }
+    }
+
+    /**
+     * Inserted at the start of JDBC execute methods that take the SQL text as their first parameter.
+     * Same as {@link #enter}, but remembers the SQL on the call's tree node.
+     */
+    public static void enterSql(int methodId, String sql) {
+        try {
+            ThreadState state = THREAD_STATE.get();
+            if (state.ignoredOpenCalls > 0) {
+                state.ignoredOpenCalls++;
+                return;
+            }
+            int depth = state.depth;
+            if (depth == 0) {
+                if (active) {
+                    startTrace(state, methodId, null, null, Trace.BACKGROUND);
+                    Node root = state.currentTrace.root;
+                    if (root != null) root.sql = sql;
+                }
+                return;
+            }
+            if (!active) {
+                state.ignoredOpenCalls++;
+                return;
+            }
+            pushNode(state, methodId, depth, sql);
         } catch (Throwable ignored) {
         }
     }
@@ -166,7 +196,8 @@ public final class Profiler {
         state.spareTrace = null;
         if (trace == null) trace = new Trace();
         trace.kind = kind;
-        if (kind == Trace.REQUEST) RequestInfo.fillFromRequest(trace, request);
+        if (kind == Trace.REQUEST)
+            RequestInfo.fillFromRequest(trace, request);
         Node rootNode = state.newNode(rootMethodId);
         trace.root = rootNode;
         trace.startMillis = System.currentTimeMillis();
@@ -196,6 +227,10 @@ public final class Profiler {
 
     /** Records a call made while a trace is running: finds or creates its tree node under the caller, then starts it. */
     private static void pushNode(ThreadState state, int methodId, int level) {
+        pushNode(state, methodId, level, null);
+    }
+
+    private static void pushNode(ThreadState state, int methodId, int level, String sql) {
         if (level >= Config.maxDepth) {
             state.ignoredOpenCalls++;
             state.droppedCount++;
@@ -218,6 +253,7 @@ public final class Profiler {
             if (level >= state.callStack.length) state.growStack();
             state.profilerAllocBytes += allocatedBytes(state) - allocBefore;
         }
+        if (sql != null) node.sql = sql;
         beginFrame(state, level, node);
     }
 

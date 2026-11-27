@@ -33,7 +33,7 @@ public final class Transformer implements ClassFileTransformer {
     private static final String JAKARTA_SERVLET = "jakarta/servlet/http/HttpServlet";
     private static final Set<String> ENTRY_CLASSES = new HashSet<String>(Arrays.asList(TOMCAT_FILTER_CHAIN, JAVAX_SERVLET, JAKARTA_SERVLET));
     private static final Set<String> JDBC_INTERFACES = new HashSet<String>(
-            Arrays.asList("java/sql/Statement", "java/sql/PreparedStatement", "java/sql/CallableStatement"));
+            Arrays.asList("java/sql/Statement", "java/sql/PreparedStatement", "java/sql/CallableStatement", "java/sql/Connection", "org/hibernate/ejb/HibernateEntityManagerImplementor", "javax/persistence/EntityManager"));
     private static final String JAVAX_FILTER_DESC = "(Ljavax/servlet/ServletRequest;Ljavax/servlet/ServletResponse;)V";
     private static final String JAKARTA_FILTER_DESC = "(Ljakarta/servlet/ServletRequest;Ljakarta/servlet/ServletResponse;)V";
     private static final String JAVAX_SERVICE_DESC = "(Ljavax/servlet/http/HttpServletRequest;Ljavax/servlet/http/HttpServletResponse;)V";
@@ -95,7 +95,9 @@ public final class Transformer implements ClassFileTransformer {
             if (!isHttpRequestEntry && !isInstrumentable(access, name, desc))
                 return mv;
             changed = true;
-            return new MethodWrapper(mv, version, MethodRegistry.register(owner, name, desc), isHttpRequestEntry);
+            boolean captureSql = jdbcOnly && desc.startsWith("(Ljava/lang/String;")
+                    && (name.startsWith("execute") || name.equals("prepareStatement") || name.equals("prepareCall") || name.equals("createNativeQuery") || name.equals("createQuery")) ;
+            return new MethodWrapper(mv, version, MethodRegistry.register(owner, name, desc), isHttpRequestEntry, captureSql);
         }
 
         private boolean isInstrumentable(int access, String name, String desc) {
@@ -103,7 +105,8 @@ public final class Transformer implements ClassFileTransformer {
             if ((access & (Opcodes.ACC_ABSTRACT | Opcodes.ACC_NATIVE | Opcodes.ACC_SYNTHETIC | Opcodes.ACC_BRIDGE)) != 0)
                 return false;
             if (name.charAt(0) == '<') return false;
-            if (jdbcOnly) return name.startsWith("execute");
+            if (jdbcOnly)
+                return name.startsWith("execute") || name.equals("prepareStatement") || name.equals("prepareCall") || name.equals("createNativeQuery") || name.equals("createQuery");
             if (!Config.skipTrivial) return true;
             switch (name) {
                 case "toString":

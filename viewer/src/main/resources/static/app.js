@@ -66,7 +66,8 @@ function treeTable(root, cols, barKey, barTotal, barClass) {
       const has = n.kids && n.kids.length;
       const tr = h('tr');
       const caret = h('span', { class: 'caret', onclick: () => { open.has(n) ? open.delete(n) : open.add(n); render(); } }, has ? (open.has(n) ? '\u25BE' : '\u25B8') : '');
-      tr.append(h('td', { class: 'name', style: 'padding-left:' + (8 + depth * 16) + 'px' }, caret, n.name));
+      tr.append(h('td', { class: 'name', style: 'padding-left:' + (8 + depth * 16) + 'px' }, caret, n.name,
+        n.vals && n.vals.sql ? h('div', { class: 'sql' }, n.vals.sql) : null));
       const frac = barTotal > 0 ? n.vals[barKey] / barTotal : 0;
       tr.append(h('td', null, h('span', { class: 'bar ' + (barClass || ''), style: 'width:' + Math.max(1, Math.round(Math.min(1, frac) * 120)) + 'px' }), ' ', h('span', { class: 'muted' }, pct(frac))));
       for (const c of cols) tr.append(h('td', { class: 'num' }, c.fmt(n.vals[c.key], n)));
@@ -95,7 +96,7 @@ function adaptTrace(n) {
   const kt = kids.reduce((s, k) => s + k.vals.t, 0), ka = kids.reduce((s, k) => s + k.vals.a, 0);
   return {
     name: n.n, kids,
-    vals: { c: n.c, t: n.t, self: Math.max(0, n.t - kt), a: n.a, selfA: Math.max(0, n.a - ka), avg: n.c ? n.t / n.c : 0, mn: n.mn || 0, mx: n.mx, e: n.e || 0 },
+    vals: { c: n.c, t: n.t, self: Math.max(0, n.t - kt), a: n.a, selfA: Math.max(0, n.a - ka), avg: n.c ? n.t / n.c : 0, mn: n.mn || 0, mx: n.mx, e: n.e || 0, sql: n.sql || null },
   };
 }
 const traceCols = [

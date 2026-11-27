@@ -29,16 +29,19 @@ final class MethodWrapper extends MethodVisitor {
     private static final String PROFILER = "io/profiler/agent/Profiler";
     private static final int REQUEST_VAR = 1;
     private static final int RESPONSE_VAR = 2;
+    /** For JDBC execute methods: the SQL string is the first parameter (slot 0 is {@code this}). */
+    private static final int SQL_VAR = 1;
 
     private final int classVersion, methodId;
-    private final boolean httpEntryPoint;
+    private final boolean httpEntryPoint, captureSql;
     private final Label tryStart = new Label(), tryEnd = new Label(), handler = new Label();
 
-    MethodWrapper(MethodVisitor mv, int classVersion, int methodId, boolean httpEntryPoint) {
+    MethodWrapper(MethodVisitor mv, int classVersion, int methodId, boolean httpEntryPoint, boolean captureSql) {
         super(Opcodes.ASM9, mv);
         this.classVersion = classVersion;
         this.methodId = methodId;
         this.httpEntryPoint = httpEntryPoint;
+        this.captureSql = captureSql;
     }
 
     /** Called once at the very start of the method: insert the "enter" call, then open the try block. */
@@ -50,6 +53,9 @@ final class MethodWrapper extends MethodVisitor {
             mv.visitVarInsn(Opcodes.ALOAD, REQUEST_VAR);
             mv.visitVarInsn(Opcodes.ALOAD, RESPONSE_VAR);
             callProfiler("enterHttpRequest", "(ILjava/lang/Object;Ljava/lang/Object;)V");
+        } else if (captureSql) {
+            mv.visitVarInsn(Opcodes.ALOAD, SQL_VAR);
+            callProfiler("enterSql", "(ILjava/lang/String;)V");
         } else {
             callProfiler("enter", "(I)V");
         }
